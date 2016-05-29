@@ -569,9 +569,9 @@ def Test_method(input):
     cute_inter = CuteInterpreter()
     result = cute_inter.run_expr(node)
     if is_type_binaryOp(result.value):
-        print "...{0}".fomat(run_binary(result))
+        print "result:{0}".format(run_binary(result))
     else:
-        print "...{0}".fomat(print_node(result))
+        print "result:{0}".format(print_node(result))
 
 def run_binary(result):
         if result.value.type is TokenType.PLUS:
