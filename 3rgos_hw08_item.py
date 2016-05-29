@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from string import letters, digits
+dic = {}
 
 class CuteType:
     INT=1
@@ -205,8 +206,6 @@ class Node (object):
         self.value = value
         self.type  = type
 
-
-
     def set_last_next(self, next_node):
         if self.next is not None:
             self.next.set_last_next(next_node)
@@ -362,6 +361,15 @@ class CuteInterpreter(object):
             if node is None:return True
             return False
 
+        def insertTable(id, value) :
+                dic[id] = value
+                return None
+
+        def look_up_Table(id):
+            temp = dic.get(id)
+            del dic[id]
+            return temp
+
         if func_node.type is TokenType.CAR:
             rhs1 = self.run_expr(rhs1)
             if not is_quote_list(rhs1):
@@ -393,8 +401,6 @@ class CuteInterpreter(object):
                 tmp.next = pop_node_from_quote_list(expr_rhs2)
             return create_quote_node(tmp,True)
 
-
-
         elif func_node.type is TokenType.ATOM_Q:
             if list_is_null(rhs1): return self.TRUE_NODE
             if rhs1.type is not TokenType.LIST: return self.TRUE_NODE
@@ -422,6 +428,7 @@ class CuteInterpreter(object):
                 return Node(TokenType.TRUE,self.TRUE_NODE)
             else:
                 return Node(TokenType.FALSE,self.FALSE_NODE)
+
         elif func_node.type is TokenType.COND:
             while True:
                 if rhs1.value.type is TokenType.LIST:
@@ -435,7 +442,17 @@ class CuteInterpreter(object):
                 else:
                     self.run_func(rhs1)
 
-        else:
+        elif func_node.type is TokenType.DEFINE:
+            rhs1 = rhs1.next
+            rhs2 = rhs1.next if rhs1.next is not None else None
+            expr_rhs2 = self.run_expr(rhs2)
+            if expr_rhs2 is TokenType.LIST:
+                if expr_rhs2.value.type is TokenType.QUOTE :
+                    insertTable(rhs1.value,  expr_rhs2)
+                else :
+                    insertTable(rhs1.value, Node(TokenType.INT, expr_rhs2.value))
+            elif expr_rhs2.type is TokenType.INT:
+                insertTable(rhs1.value, expr_rhs2)
             return None
 
     def run_expr(self, root_node):
@@ -569,9 +586,9 @@ def Test_method(input):
     cute_inter = CuteInterpreter()
     result = cute_inter.run_expr(node)
     if is_type_binaryOp(result.value):
-        print "result:{0}".format(run_binary(result))
+        print "result : {0}".format(run_binary(result))
     else:
-        print "result:{0}".format(print_node(result))
+        print "result : {0}".format(print_node(result))
 
 def run_binary(result):
         if result.value.type is TokenType.PLUS:
