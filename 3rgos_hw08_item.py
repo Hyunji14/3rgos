@@ -620,13 +620,13 @@ def Test_method(input):
     result = cute_inter.run_expr(node)
 
     if result is None:
-        return ""  # print "result : "
+        return ""
     elif result.type is not TokenType.LIST:
         return result.value
     elif is_type_binaryOp(result.value):
-        return run_binary(result)  # print "result : {0}".format(run_binary(result))
+        return run_binary(result)
     else:
-        return print_node(result)  # print "result : {0}".format(print_node(result))
+        return print_node(result)
 
 
 def run_binary(result):
