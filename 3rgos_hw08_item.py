@@ -414,7 +414,7 @@ class CuteInterpreter(object):
             expr_rhs1 = self.run_expr(rhs1)
             expr_rhs2 = self.run_expr(rhs2)
             # 작성
-            # rhs2는 무조건 list라고 가정
+            # rhs2는 무조건 list라고 가정 
             if is_quote_list(expr_rhs1):
                 tmp = create_quote_node(pop_node_from_quote_list(expr_rhs1), True).value.next
             else:
