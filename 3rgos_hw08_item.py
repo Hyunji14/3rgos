@@ -1,37 +1,40 @@
 # -*- coding: utf-8 -*-
 from string import letters, digits
+
 dic = {}
 
-class CuteType:
-    INT=1
-    ID=4
-    MINUS=2
-    PLUS=3
-    L_PAREN=5
-    R_PAREN=6
-    TRUE=8
-    FALSE=9
-    TIMES=10
-    DIV=11
-    LT=12
-    GT=13
-    EQ=14
-    APOSTROPHE=15
-    DEFINE=20
-    LAMBDA=21
-    COND=22
-    QUOTE=23
-    NOT=24
-    CAR=25
-    CDR=26
-    CONS=27
-    ATOM_Q=28
-    NULL_Q=29
-    EQ_Q=30
 
-    KEYWORD_LIST=('define', 'lambda', 'cond','quote', 'not', 'car', 'cdr', 'cons', 'atom?', 'null?', 'eq?' )
-    BINARYOP_LIST=(DIV, TIMES, MINUS, PLUS, LT, GT, EQ)
-    BOOLEAN_LIST=(TRUE, FALSE)
+class CuteType:
+    INT = 1
+    ID = 4
+    MINUS = 2
+    PLUS = 3
+    L_PAREN = 5
+    R_PAREN = 6
+    TRUE = 8
+    FALSE = 9
+    TIMES = 10
+    DIV = 11
+    LT = 12
+    GT = 13
+    EQ = 14
+    APOSTROPHE = 15
+    DEFINE = 20
+    LAMBDA = 21
+    COND = 22
+    QUOTE = 23
+    NOT = 24
+    CAR = 25
+    CDR = 26
+    CONS = 27
+    ATOM_Q = 28
+    NULL_Q = 29
+    EQ_Q = 30
+
+    KEYWORD_LIST = ('define', 'lambda', 'cond', 'quote', 'not', 'car', 'cdr', 'cons', 'atom?', 'null?', 'eq?')
+    BINARYOP_LIST = (DIV, TIMES, MINUS, PLUS, LT, GT, EQ)
+    BOOLEAN_LIST = (TRUE, FALSE)
+
 
 def check_keyword(token):
     """
@@ -43,30 +46,31 @@ def check_keyword(token):
         return True
     return False
 
+
 def is_type_keyword(token):
-    if 20 <= token.type <= 30 :
+    if 20 <= token.type <= 30:
         return True
     return False
 
 
-
-
 def _get_keyword_type(token):
     return {
-        'define':CuteType.DEFINE,
-        'lambda':CuteType.LAMBDA,
-        'cond':CuteType.COND,
-        'quote':CuteType.QUOTE,
-        'not':CuteType.NOT,
-        'car':CuteType.CAR,
-        'cdr':CuteType.CDR,
-        'cons':CuteType.CONS,
-        'atom?':CuteType.ATOM_Q,
-        'null?':CuteType.NULL_Q,
-        'eq?':CuteType.EQ_Q
+        'define': CuteType.DEFINE,
+        'lambda': CuteType.LAMBDA,
+        'cond': CuteType.COND,
+        'quote': CuteType.QUOTE,
+        'not': CuteType.NOT,
+        'car': CuteType.CAR,
+        'cdr': CuteType.CDR,
+        'cons': CuteType.CONS,
+        'atom?': CuteType.ATOM_Q,
+        'null?': CuteType.NULL_Q,
+        'eq?': CuteType.EQ_Q
     }[token]
 
-CUTETYPE_NAMES=dict((eval(attr, globals(), CuteType.__dict__), attr) for attr in dir(CuteType()) if not callable(attr) and not attr.startswith("__"))
+
+CUTETYPE_NAMES = dict((eval(attr, globals(), CuteType.__dict__), attr) for attr in dir(CuteType()) if
+                      not callable(attr) and not attr.startswith("__"))
 
 
 def is_type_binaryOp(token):
@@ -78,6 +82,8 @@ def is_type_binaryOp(token):
     if token.type in CuteType.BINARYOP_LIST:
         return True
     return False
+
+
 def is_type_boolean(token):
     """
     :type token:Token
@@ -89,7 +95,6 @@ def is_type_boolean(token):
     return False
 
 
-
 class Token(object):
     def __init__(self, type, lexeme):
         """
@@ -99,14 +104,15 @@ class Token(object):
         :param lexeme:
         :return:
         """
-        self.type=type
-        self.lexeme=lexeme
-        #print type
+        self.type = type
+        self.lexeme = lexeme
+        # print type
 
     def __str__(self):
-        #return self.lexeme
+        # return self.lexeme
         if self is None: return None
         return "[" + CUTETYPE_NAMES[self.type] + ": " + self.lexeme + "]"
+
     def __repr__(self):
         return str(self)
 
@@ -116,26 +122,26 @@ class CuteScanner(object):
     :type token_iter:iter
     """
 
-    transM={}
+    transM = {}
+
     def __init__(self, source):
         """
         :type source:str
         :param source:
         :return:
         """
-        source=source.strip()
-        token_list=source.split(" ")
-        self.token_iter=iter(token_list)
-
+        source = source.strip()
+        token_list = source.split(" ")
+        self.token_iter = iter(token_list)
 
     def get_state(self, old_state, trans_char):
-        if trans_char in digits+letters+'?':
+        if trans_char in digits + letters + '?':
             return {
-                0: {k: 1 if k in digits else 4 for k in digits+letters},
+                0: {k: 1 if k in digits else 4 for k in digits + letters},
                 1: {k: 1 for k in digits},
                 2: {k: 1 for k in digits},
                 3: {k: 1 for k in digits},
-                4: {k: 4 if k is not '?' else 16 for k in digits+letters+'?'},
+                4: {k: 4 if k is not '?' else 16 for k in digits + letters + '?'},
                 7: {k: 8 if k is 'T' else 9 for k in ['T', 'F']}
             }[old_state][trans_char]
         if old_state is 0:
@@ -148,69 +154,72 @@ class CuteScanner(object):
                 '#': 7
             }[trans_char]
 
-
     def next_token(self):
-        state_old=0
-        temp_token=next(self.token_iter, None)
+        state_old = 0
+        temp_token = next(self.token_iter, None)
         """:type :str"""
-        if temp_token is None : return None
+        if temp_token is None: return None
         for temp_char in temp_token:
-            state_old=self.get_state(state_old, temp_char)
+            state_old = self.get_state(state_old, temp_char)
 
         if check_keyword(temp_token):
             result = Token(_get_keyword_type(temp_token), temp_token)
         else:
-            result=Token(state_old, temp_token)
+            result = Token(state_old, temp_token)
         return result
 
     def tokenize(self):
-        tokens=[]
+        tokens = []
         while True:
-            t=self.next_token()
-            if t is None :break
+            t = self.next_token()
+            if t is None: break
             tokens.append(t)
         return tokens
 
+
 class TokenType():
-    INT=1
-    ID=4
-    MINUS=2
-    PLUS=3
-    LIST=5
-    TRUE=8
-    FALSE=9
-    TIMES=10
-    DIV=11
-    LT=12
-    GT=13
-    EQ=14
-    APOSTROPHE=15
-    DEFINE=20
-    LAMBDA=21
-    COND=22
-    QUOTE=23
-    NOT=24
-    CAR=25
-    CDR=26
-    CONS=27
-    ATOM_Q=28
-    NULL_Q=29
-    EQ_Q=30
+    INT = 1
+    ID = 4
+    MINUS = 2
+    PLUS = 3
+    LIST = 5
+    TRUE = 8
+    FALSE = 9
+    TIMES = 10
+    DIV = 11
+    LT = 12
+    GT = 13
+    EQ = 14
+    APOSTROPHE = 15
+    DEFINE = 20
+    LAMBDA = 21
+    COND = 22
+    QUOTE = 23
+    NOT = 24
+    CAR = 25
+    CDR = 26
+    CONS = 27
+    ATOM_Q = 28
+    NULL_Q = 29
+    EQ_Q = 30
 
-NODETYPE_NAMES = dict((eval(attr, globals(), TokenType.__dict__), attr) for attr in dir(TokenType()) if not callable(attr) and not attr.startswith("__"))
 
-class Node (object):
+NODETYPE_NAMES = dict((eval(attr, globals(), TokenType.__dict__), attr) for attr in dir(TokenType()) if
+                      not callable(attr) and not attr.startswith("__"))
 
+
+class Node(object):
     def __init__(self, type, value=None):
-        self.next  = None
+        self.next = None
         self.value = value
-        self.type  = type
+        self.type = type
 
     def set_last_next(self, next_node):
         if self.next is not None:
             self.next.set_last_next(next_node)
 
-        else : self.next=next_node
+        else:
+            self.next = next_node
 
     def get_tail(self):
         def get_list_tail(node):
@@ -223,49 +232,49 @@ class Node (object):
                 if node.next is None:
                     return node
                 return get_list_tail(node.next)
+
         if self.type is TokenType.LIST:
             return get_list_tail(self)
         return self
 
-
     def __str__(self):
         result = ""
 
-        if   self.type is TokenType.ID:
-            result = "["+self.value+"]"
+        if self.type is TokenType.ID:
+            result = "[" + self.value + "]"
         elif self.type is TokenType.INT:
             result = str(self.value)
         elif self.type is TokenType.LIST:
             if self.value is not None and self.value.type is TokenType.QUOTE:
                 result = str(self.value)
             else:
-                result = "("+str(self.value)+")"
+                result = "(" + str(self.value) + ")"
         elif self.type is TokenType.QUOTE:
             result = "'"
         else:
-            result = "["+NODETYPE_NAMES[self.type]+"]"
+            result = "[" + NODETYPE_NAMES[self.type] + "]"
 
         if self.next is None:
             return result
-        else: return result+" "+str(self.next)
+        else:
+            return result + " " + str(self.next)
 
 
 class BasicPaser(object):
-
     def __init__(self, token_list):
         """
         :type token_list:list
         :param token_list:
         :return:
         """
-        self.token_iter=iter(token_list)
+        self.token_iter = iter(token_list)
 
     def _get_next_token(self):
         """
         :rtype: Token
         :return:
         """
-        next_token=next(self.token_iter, None)
+        next_token = next(self.token_iter, None)
         if next_token is None: return None
         return next_token
 
@@ -274,23 +283,26 @@ class BasicPaser(object):
         :rtype : Node
         :return:
         """
-        token =self._get_next_token()
+        token = self._get_next_token()
         """:type :Token"""
-        if token==None: return None
+        if token == None: return None
         result = self._create_node(token)
         return result
-
 
     def _create_node(self, token):
         if token is None: return None
 
-        if   token.type is CuteType.INT:     return Node(TokenType.INT,  token.lexeme)
-        elif token.type is CuteType.ID:      return Node(TokenType.ID,   token.lexeme)
-        elif token.type is CuteType.L_PAREN: return Node(TokenType.LIST, self._parse_expr_list())
-        elif token.type is CuteType.R_PAREN: return None
+        if token.type is CuteType.INT:
+            return Node(TokenType.INT, token.lexeme)
+        elif token.type is CuteType.ID:
+            return Node(TokenType.ID, token.lexeme)
+        elif token.type is CuteType.L_PAREN:
+            return Node(TokenType.LIST, self._parse_expr_list())
+        elif token.type is CuteType.R_PAREN:
+            return None
         elif token.type is CuteType.APOSTROPHE:
             q_node = Node(TokenType.QUOTE)
-            q_node.next=self.parse_expr()
+            q_node.next = self.parse_expr()
             new_list_node = Node(TokenType.LIST, q_node)
             return new_list_node
 
@@ -299,8 +311,8 @@ class BasicPaser(object):
             return q_node
 
         elif is_type_binaryOp(token) or \
-            is_type_keyword(token)   or \
-            is_type_boolean(token):
+                is_type_keyword(token) or \
+                is_type_boolean(token):
             return Node(token.type)
 
         else:
@@ -313,8 +325,8 @@ class BasicPaser(object):
             head.next = self._parse_expr_list()
         return head
 
-class CuteInterpreter(object):
 
+class CuteInterpreter(object):
     TRUE_NODE = Node(TokenType.TRUE)
     FALSE_NODE = Node(TokenType.FALSE)
 
@@ -329,8 +341,8 @@ class CuteInterpreter(object):
             rhs1 = dic[rhs1.value]
         if rhs2 is not None and rhs2.value in dic.keys():
             rhs2 = dic[rhs2.value]
-        
-        def create_quote_node(node, list_flag = False):
+
+        def create_quote_node(node, list_flag=False):
             """
             "Quote 노드를 생성한 뒤, node를 next로 하여 반환"
             "list_flag가 True일 경우, list node를 생성한 뒤, list의 value를 입력받은 node로 연결하고"
@@ -363,12 +375,12 @@ class CuteInterpreter(object):
         def list_is_null(node):
             "입력받은 node가 null list인지 확인함"
             node = pop_node_from_quote_list(node)
-            if node is None:return True
+            if node is None: return True
             return False
 
-        def insertTable(id, value) :
-                dic[id] = value
-                return None
+        def insertTable(id, value):
+            dic[id] = value
+            return None
 
         def look_up_Table(id):
             temp = dic.get(id)
@@ -379,32 +391,38 @@ class CuteInterpreter(object):
             rhs1 = self.run_expr(rhs1)
             if not is_quote_list(rhs1):
                 print ("car error!")
+
+            if rhs1 in dic.values():
+                if rhs1.type is TokenType.QUOTE:
+                    rhs1 = Node(TokenType.LIST, rhs1)
+                # return create_quote_node(result)
+
             result = pop_node_from_quote_list(rhs1)
             if result.type is not TokenType.LIST:
                 return result
             return create_quote_node(result)
 
         elif func_node.type is TokenType.CDR:
-            #작성
+            # 작성
             if not is_quote_list(rhs1):
                 print ("cdr error!")
             tmp = rhs1.value.next.value.next
             if tmp is None:
-                return create_quote_node(Node(TokenType.ID,""),True)
+                return create_quote_node(Node(TokenType.ID, ""), True)
             return create_quote_node(tmp, True)
 
         elif func_node.type is TokenType.CONS:
             expr_rhs1 = self.run_expr(rhs1)
             expr_rhs2 = self.run_expr(rhs2)
-            #작성
-            #rhs2는 무조건 list라고 가정
+            # 작성
+            # rhs2는 무조건 list라고 가정
             if is_quote_list(expr_rhs1):
-                tmp = create_quote_node(pop_node_from_quote_list(expr_rhs1),True).value.next
+                tmp = create_quote_node(pop_node_from_quote_list(expr_rhs1), True).value.next
             else:
                 tmp = create_quote_node(pop_node_from_quote_list(expr_rhs1)).value.next
             if expr_rhs2 is not None:
                 tmp.next = pop_node_from_quote_list(expr_rhs2)
-            return create_quote_node(tmp,True)
+            return create_quote_node(tmp, True)
 
         elif func_node.type is TokenType.ATOM_Q:
             if list_is_null(rhs1): return self.TRUE_NODE
@@ -416,7 +434,7 @@ class CuteInterpreter(object):
             return self.FALSE_NODE
 
         elif func_node.type is TokenType.EQ_Q:
-            #작성
+            # 작성
             if rhs1.type is TokenType.INT:
                 if rhs1.value == rhs1.next.value:
                     return self.TRUE_NODE
@@ -430,20 +448,20 @@ class CuteInterpreter(object):
             return self.FALSE_NODE
         elif func_node.type is TokenType.NOT:
             if rhs1.type is TokenType.FALSE:
-                return Node(TokenType.TRUE,self.TRUE_NODE)
+                return Node(TokenType.TRUE, self.TRUE_NODE)
             else:
-                return Node(TokenType.FALSE,self.FALSE_NODE)
+                return Node(TokenType.FALSE, self.FALSE_NODE)
 
         elif func_node.type is TokenType.COND:
             while True:
                 if rhs1.value.type is TokenType.LIST:
                     if calc(rhs1.value) == "#T":
                         rhs1.value.next.next = None
-                        return Node(TokenType.INT,rhs1.value.next)
+                        return Node(TokenType.INT, rhs1.value.next)
                     else:
                         rhs1 = rhs1.next
                 elif rhs1.value.type is TokenType.TRUE:
-                    return Node(rhs1.value.next.type,rhs1.value.next)
+                    return Node(rhs1.value.next.type, rhs1.value.next)
                 else:
                     self.run_func(rhs1)
 
@@ -451,32 +469,21 @@ class CuteInterpreter(object):
             rhs1 = func_node.next
             rhs2 = rhs1.next if rhs1.next is not None else None
             expr_rhs2 = self.run_expr(rhs2)
-            #print expr_rhs2.type
-            if is_type_binaryOp(expr_rhs2):
-            #    expr_rhs2 = Node(TokenType.INT,run_binary(expr_rhs2))
-            #    print dic#print "result : {0}".format(run_binary(result))
-            #else:
-                #print expr_rhs2.type
-                #print "dd"
+            if expr_rhs2.type is TokenType.LIST and is_type_binaryOp(expr_rhs2.value):
                 result_data = Test_method(print_node(expr_rhs2))
                 if result_data == "#T":
-                    expr_rhs2 = Node(TokenType.TRUE,result_data)
+                    expr_rhs2 = Node(TokenType.TRUE, result_data)
                 elif result_data == "#F":
-                    expr_rhs2 = Node(TokenType.FALSE,result_data)
+                    expr_rhs2 = Node(TokenType.FALSE, result_data)
                 else:
-                    expr_rhs2 = Node(TokenType.INT,result_data)#print "result : {0}".format(print_node(result))
+                    expr_rhs2 = Node(TokenType.INT, result_data)
             if expr_rhs2.type is TokenType.LIST:
-                #print "aaa"
-                if expr_rhs2.value.type is TokenType.QUOTE :
-                    #print "q"
-                    insertTable(rhs1.value,  expr_rhs2.value)
-                else :
-                    #print "c"
+                if expr_rhs2.value.type is TokenType.QUOTE:
+                    insertTable(rhs1.value, expr_rhs2)
+                else:
                     insertTable(rhs1.value, Node(TokenType.INT, expr_rhs2.value))
-            else:#if expr_rhs2.type is TokenType.INT:
-                #print expr_rhs2.type
+            else:
                 insertTable(rhs1.value, expr_rhs2)
-            #print dic
             return None
 
     def run_expr(self, root_node):
@@ -508,7 +515,7 @@ class CuteInterpreter(object):
         if op_code is None:
             return l_node
         if op_code.type in \
-                [TokenType.CAR, TokenType.CDR, TokenType.CONS, TokenType.ATOM_Q,\
+                [TokenType.CAR, TokenType.CDR, TokenType.CONS, TokenType.ATOM_Q, \
                  TokenType.EQ_Q, TokenType.NULL_Q, TokenType.NOT, TokenType.COND, TokenType.DEFINE]:
             return self.run_func(op_code)
         if op_code.type is TokenType.QUOTE:
@@ -530,9 +537,8 @@ class CuteInterpreter(object):
         else:
             print "application: not a procedure;"
             print "expected a procedure that can be applied to arguments"
-            print "Token Type is "+ op_code.value
+            print "Token Type is " + op_code.value
             return None
-
 
 
 def print_node(node):
@@ -541,21 +547,23 @@ def print_node(node):
     "입력은 List Node 또는 atom"
     :type node: Node
     """
+
     def print_list(node):
         """
         "List노드의 value에 대해서 출력"
         "( 2 3 )이 입력이면 2와 3에 대해서 모두 출력함"
         :type node: Node
         """
+
         def print_list_val(node):
             if node.next is not None:
-                return print_node(node)+" "+print_list_val(node.next)
+                return print_node(node) + " " + print_list_val(node.next)
             return print_node(node)
 
         if node.type is TokenType.LIST:
             if node.value.type is TokenType.QUOTE:
                 return print_node(node.value)
-            return "( "+print_list_val(node.value)+" )"
+            return "( " + print_list_val(node.value) + " )"
 
     if node is None:
         return ""
@@ -600,47 +608,52 @@ def print_node(node):
     if node.type is TokenType.NOT:
         return "not"
     if node.type is TokenType.QUOTE:
-        return "'"+print_node(node.next)
+        return "'" + print_node(node.next)
+
 
 def Test_method(input):
     test_cute = CuteScanner(input)
-    test_tokens=test_cute.tokenize()
+    test_tokens = test_cute.tokenize()
     test_basic_paser = BasicPaser(test_tokens)
     node = test_basic_paser.parse_expr()
     cute_inter = CuteInterpreter()
     result = cute_inter.run_expr(node)
+
     if result is None:
-        return ""#print "result : "
+        return ""  # print "result : "
+    elif result.type is not TokenType.LIST:
+        return result.value
     elif is_type_binaryOp(result.value):
-        return run_binary(result)#print "result : {0}".format(run_binary(result))
+        return run_binary(result)  # print "result : {0}".format(run_binary(result))
     else:
-        return print_node(result)#print "result : {0}".format(print_node(result))
+        return print_node(result)  # print "result : {0}".format(print_node(result))
+
 
 def run_binary(result):
-        rhs1 = result.value
-        if rhs1.type is TokenType.PLUS:
-            return calc(rhs1.next) + calc(rhs1.next.next)
-        elif rhs1.type is TokenType.MINUS:
-            return calc(rhs1.next) - calc(rhs1.next.next)
-        elif rhs1.type is TokenType.GT:
-            if calc(rhs1.next) > calc(rhs1.next.next):
-                return "#T"
-            elif calc(rhs1.next) < calc(rhs1.next.next):
-                return "#F"
-        elif rhs1.type is TokenType.LT:
-            if calc(rhs1.next) < calc(rhs1.next.next):
-                return "#T"
-            elif calc(rhs1.next) > calc(rhs1.next.next):
-                return "#F"
-        elif rhs1.type is TokenType.TIMES:
-            return calc(rhs1.next) * calc(rhs1.next.next)
-        elif rhs1.type is TokenType.DIV:
-            return calc(rhs1.next) / calc(rhs1.next.next)
-        elif rhs1.type is TokenType.EQ:
-            if calc(rhs1.next) == calc(rhs1.next.next):
-                return "#T"
-            else:
-                return "#F"
+    rhs1 = result.value
+    if rhs1.type is TokenType.PLUS:
+        return calc(rhs1.next) + calc(rhs1.next.next)
+    elif rhs1.type is TokenType.MINUS:
+        return calc(rhs1.next) - calc(rhs1.next.next)
+    elif rhs1.type is TokenType.GT:
+        if calc(rhs1.next) > calc(rhs1.next.next):
+            return "#T"
+        elif calc(rhs1.next) < calc(rhs1.next.next):
+            return "#F"
+    elif rhs1.type is TokenType.LT:
+        if calc(rhs1.next) < calc(rhs1.next.next):
+            return "#T"
+        elif calc(rhs1.next) > calc(rhs1.next.next):
+            return "#F"
+    elif rhs1.type is TokenType.TIMES:
+        return calc(rhs1.next) * calc(rhs1.next.next)
+    elif rhs1.type is TokenType.DIV:
+        return calc(rhs1.next) / calc(rhs1.next.next)
+    elif rhs1.type is TokenType.EQ:
+        if calc(rhs1.next) == calc(rhs1.next.next):
+            return "#T"
+        else:
+            return "#F"
 
 
 def calc(node):
@@ -651,9 +664,11 @@ def calc(node):
     else:
         return int(node.value)
 
+
 def Test_All():
     cmd = raw_input("> ")
     print "result : {0}".format(Test_method(cmd))
+
 
 while True:
     Test_All()
