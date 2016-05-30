@@ -391,11 +391,13 @@ class CuteInterpreter(object):
             rhs1 = self.run_expr(rhs1)
             if not is_quote_list(rhs1):
                 print ("car error!")
-            result = pop_node_from_quote_list(rhs1)
 
             if rhs1 in dic.values():
-                return create_quote_node(result)
+                if rhs1.type is TokenType.QUOTE:
+                    rhs1 = Node(TokenType.LIST, rhs1)
+                # return create_quote_node(result)
 
+            result = pop_node_from_quote_list(rhs1)
             if result.type is not TokenType.LIST:
                 return result
             return create_quote_node(result)
