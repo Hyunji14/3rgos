@@ -395,7 +395,6 @@ class CuteInterpreter(object):
             if rhs1 in dic.values():
                 if rhs1.type is TokenType.QUOTE:
                     rhs1 = Node(TokenType.LIST, rhs1)
-                # return create_quote_node(result)
 
             result = pop_node_from_quote_list(rhs1)
             if result.type is not TokenType.LIST:
@@ -415,7 +414,7 @@ class CuteInterpreter(object):
             expr_rhs1 = self.run_expr(rhs1)
             expr_rhs2 = self.run_expr(rhs2)
             # 작성
-            # rhs2는 무조건 list라고 가정
+            # rhs2는 무조건 list라고 가정 
             if is_quote_list(expr_rhs1):
                 tmp = create_quote_node(pop_node_from_quote_list(expr_rhs1), True).value.next
             else:
@@ -469,7 +468,7 @@ class CuteInterpreter(object):
             rhs1 = func_node.next
             rhs2 = rhs1.next if rhs1.next is not None else None
             expr_rhs2 = self.run_expr(rhs2)
-            if is_type_binaryOp(expr_rhs2):
+            if expr_rhs2.type is TokenType.LIST and is_type_binaryOp(expr_rhs2.value):
                 result_data = Test_method(print_node(expr_rhs2))
                 if result_data == "#T":
                     expr_rhs2 = Node(TokenType.TRUE, result_data)
@@ -620,13 +619,13 @@ def Test_method(input):
     result = cute_inter.run_expr(node)
 
     if result is None:
-        return ""  # print "result : "
+        return ""
     elif result.type is not TokenType.LIST:
         return result.value
     elif is_type_binaryOp(result.value):
-        return run_binary(result)  # print "result : {0}".format(run_binary(result))
+        return run_binary(result)
     else:
-        return print_node(result)  # print "result : {0}".format(print_node(result))
+        return print_node(result)
 
 
 def run_binary(result):
