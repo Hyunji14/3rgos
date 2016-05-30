@@ -395,7 +395,6 @@ class CuteInterpreter(object):
             if rhs1 in dic.values():
                 if rhs1.type is TokenType.QUOTE:
                     rhs1 = Node(TokenType.LIST, rhs1)
-                # return create_quote_node(result)
 
             result = pop_node_from_quote_list(rhs1)
             if result.type is not TokenType.LIST:
