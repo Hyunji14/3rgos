@@ -325,6 +325,11 @@ class CuteInterpreter(object):
         rhs1 = func_node.next
         rhs2 = rhs1.next if rhs1.next is not None else None
 
+        if rhs1.value in dic.keys():
+            rhs1 = dic[rhs1.value]
+        if rhs2 is not None and rhs2.value in dic.keys():
+            rhs2 = dic[rhs2.value]
+        
         def create_quote_node(node, list_flag = False):
             """
             "Quote 노드를 생성한 뒤, node를 next로 하여 반환"
@@ -443,16 +448,35 @@ class CuteInterpreter(object):
                     self.run_func(rhs1)
 
         elif func_node.type is TokenType.DEFINE:
-            rhs1 = rhs1.next
+            rhs1 = func_node.next
             rhs2 = rhs1.next if rhs1.next is not None else None
             expr_rhs2 = self.run_expr(rhs2)
-            if expr_rhs2 is TokenType.LIST:
+            #print expr_rhs2.type
+            if is_type_binaryOp(expr_rhs2):
+            #    expr_rhs2 = Node(TokenType.INT,run_binary(expr_rhs2))
+            #    print dic#print "result : {0}".format(run_binary(result))
+            #else:
+                #print expr_rhs2.type
+                #print "dd"
+                result_data = Test_method(print_node(expr_rhs2))
+                if result_data == "#T":
+                    expr_rhs2 = Node(TokenType.TRUE,result_data)
+                elif result_data == "#F":
+                    expr_rhs2 = Node(TokenType.FALSE,result_data)
+                else:
+                    expr_rhs2 = Node(TokenType.INT,result_data)#print "result : {0}".format(print_node(result))
+            if expr_rhs2.type is TokenType.LIST:
+                #print "aaa"
                 if expr_rhs2.value.type is TokenType.QUOTE :
-                    insertTable(rhs1.value,  expr_rhs2)
+                    #print "q"
+                    insertTable(rhs1.value,  expr_rhs2.value)
                 else :
+                    #print "c"
                     insertTable(rhs1.value, Node(TokenType.INT, expr_rhs2.value))
-            elif expr_rhs2.type is TokenType.INT:
+            else:#if expr_rhs2.type is TokenType.INT:
+                #print expr_rhs2.type
                 insertTable(rhs1.value, expr_rhs2)
+            #print dic
             return None
 
     def run_expr(self, root_node):
@@ -485,7 +509,7 @@ class CuteInterpreter(object):
             return l_node
         if op_code.type in \
                 [TokenType.CAR, TokenType.CDR, TokenType.CONS, TokenType.ATOM_Q,\
-                 TokenType.EQ_Q, TokenType.NULL_Q, TokenType.NOT, TokenType.COND]:
+                 TokenType.EQ_Q, TokenType.NULL_Q, TokenType.NOT, TokenType.COND, TokenType.DEFINE]:
             return self.run_func(op_code)
         if op_code.type is TokenType.QUOTE:
             return l_node
@@ -531,7 +555,7 @@ def print_node(node):
         if node.type is TokenType.LIST:
             if node.value.type is TokenType.QUOTE:
                 return print_node(node.value)
-            return "("+print_list_val(node.value)+")"
+            return "( "+print_list_val(node.value)+" )"
 
     if node is None:
         return ""
@@ -585,32 +609,35 @@ def Test_method(input):
     node = test_basic_paser.parse_expr()
     cute_inter = CuteInterpreter()
     result = cute_inter.run_expr(node)
-    if is_type_binaryOp(result.value):
-        print "result : {0}".format(run_binary(result))
+    if result is None:
+        return ""#print "result : "
+    elif is_type_binaryOp(result.value):
+        return run_binary(result)#print "result : {0}".format(run_binary(result))
     else:
-        print "result : {0}".format(print_node(result))
+        return print_node(result)#print "result : {0}".format(print_node(result))
 
 def run_binary(result):
-        if result.value.type is TokenType.PLUS:
-            return calc(result.value.next) + calc(result.value.next.next)
-        elif result.value.type is TokenType.MINUS:
-            return calc(result.value.next) - calc(result.value.next.next)
-        elif result.value.type is TokenType.GT:
-            if calc(result.value.next) > calc(result.value.next.next):
+        rhs1 = result.value
+        if rhs1.type is TokenType.PLUS:
+            return calc(rhs1.next) + calc(rhs1.next.next)
+        elif rhs1.type is TokenType.MINUS:
+            return calc(rhs1.next) - calc(rhs1.next.next)
+        elif rhs1.type is TokenType.GT:
+            if calc(rhs1.next) > calc(rhs1.next.next):
                 return "#T"
-            elif calc(result.value.next) < calc(result.value.next.next):
+            elif calc(rhs1.next) < calc(rhs1.next.next):
                 return "#F"
-        elif result.value.type is TokenType.LT:
-            if calc(result.value.next) < calc(result.value.next.next):
+        elif rhs1.type is TokenType.LT:
+            if calc(rhs1.next) < calc(rhs1.next.next):
                 return "#T"
-            elif calc(result.value.next) > calc(result.value.next.next):
+            elif calc(rhs1.next) > calc(rhs1.next.next):
                 return "#F"
-        elif result.value.type is TokenType.TIMES:
-            return calc(result.value.next) * calc(result.value.next.next)
-        elif result.value.type is TokenType.DIV:
-            return calc(result.value.next) / calc(result.value.next.next)
-        elif result.value.type is TokenType.EQ:
-            if calc(result.value.next) == calc(result.value.next.next):
+        elif rhs1.type is TokenType.TIMES:
+            return calc(rhs1.next) * calc(rhs1.next.next)
+        elif rhs1.type is TokenType.DIV:
+            return calc(rhs1.next) / calc(rhs1.next.next)
+        elif rhs1.type is TokenType.EQ:
+            if calc(rhs1.next) == calc(rhs1.next.next):
                 return "#T"
             else:
                 return "#F"
@@ -619,12 +646,14 @@ def run_binary(result):
 def calc(node):
     if node.type is TokenType.LIST:
         return run_binary(node)
+    elif node.value in dic.keys():
+        return calc(dic[node.value])
     else:
         return int(node.value)
 
 def Test_All():
     cmd = raw_input("> ")
-    Test_method(cmd)
+    print "result : {0}".format(Test_method(cmd))
 
 while True:
     Test_All()
